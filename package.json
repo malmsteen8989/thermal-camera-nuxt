@@ -6,11 +6,19 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "dev-debug": "node --debug node_modules/.bin/nuxt"
   },
   "dependencies": {
+    "@tensorflow-models/blazeface": "^0.0.5",
+    "@tensorflow/tfjs": "^2.7.0",
+    "@tensorflow/tfjs-backend-webgl": "^2.7.0",
+    "@tensorflow/tfjs-converter": "^2.7.0",
+    "@tensorflow/tfjs-core": "^2.7.0",
     "core-js": "^3.6.5",
-    "nuxt": "^2.14.6"
+    "nuxt": "^2.14.6",
+    "vue-meta": "^2.4.0",
+    "vue-web-cam": "^1.9.0"
   },
   "devDependencies": {
     "@nuxtjs/vuetify": "^1.11.2"

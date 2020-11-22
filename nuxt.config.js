@@ -5,15 +5,15 @@ export default {
   // Disable server-side rendering (https://go.nuxtjs.dev/ssr-mode)
   ssr: false,
   server: {
-    host:  "0.0.0.0",
-    // https: {
-    //   key: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.key")
-    //   ),
-    //   cert: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.crt")
-    //   )
-    // }
+    host: "0.0.0.0",
+    https: {
+      key: fs.readFileSync(
+        path.resolve("C://ssl localhost", "client-1.local.key")
+      ),
+      cert: fs.readFileSync(
+        path.resolve("C://ssl localhost", "client-1.local.crt")
+      )
+    }
   },
 
   // Target (https://go.nuxtjs.dev/config-target)
@@ -28,14 +28,24 @@ export default {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { hid: "description", name: "description", content: "" }
     ],
-    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
+    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+    // script: [
+    //   {
+    //     src: "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"
+    //   },
+      
+    //   {
+    //     src: "https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface",
+    //   },
+      
+    // ]
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: [],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [],
+   plugins: ['@/plugins/blazeface.js'],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -47,8 +57,7 @@ export default {
   ],
 
   // Modules (https://go.nuxtjs.dev/config-modules)
-  modules: [],
-
+  modules: ["vue-web-cam/nuxt"],
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
   vuetify: {
     customVariables: ["~/assets/variables.scss"],
@@ -69,5 +78,11 @@ export default {
   },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {}
+  build: {
+    extend(config, ctx) {
+      if (ctx.isDev) {
+        config.devtool = ctx.isClient ? "source-map" : "inline-source-map";
+      }
+    }
+  }
 };
