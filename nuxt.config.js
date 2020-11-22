@@ -6,6 +6,7 @@ export default {
   ssr: false,
   server: {
     host: "0.0.0.0",
+    //remark for production
     https: {
       key: fs.readFileSync(
         path.resolve("C://ssl localhost", "client-1.local.key")
