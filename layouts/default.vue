@@ -101,11 +101,11 @@ export default {
           title: 'Thermal Detection',
           to: '/'
         },
-        {
-          icon: 'mdi-code-greater-than-or-equal',
-          title: 'About',
-          to: '/About'
-        }
+        // {
+        //   icon: 'mdi-code-greater-than-or-equal',
+        //   title: 'About',
+        //   to: '/About'
+        // }
       ],
       miniVariant: false,
       right: true,

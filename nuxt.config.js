@@ -7,14 +7,14 @@ export default {
   server: {
     host: "0.0.0.0",
     //remark for production
-    // https: {
-    //   key: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.key")
-    //   ),
-    //   cert: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.crt")
-    //   )
-    // }
+    https: {
+      key: fs.readFileSync(
+        path.resolve("C://ssl localhost", "client-1.local.key")
+      ),
+      cert: fs.readFileSync(  
+        path.resolve("C://ssl localhost", "client-1.local.crt")
+      )
+    }
   },
 
   // Target (https://go.nuxtjs.dev/config-target)
@@ -84,6 +84,13 @@ export default {
       if (ctx.isDev) {
         config.devtool = ctx.isClient ? "source-map" : "inline-source-map";
       }
+      config.module.rules.push({
+        test: /\.(mp3|)$/i,
+        loader: "file-loader",
+        options: {
+          name: "[path][name].[ext]"
+        }
+      });
     }
   }
 };
