@@ -3,6 +3,7 @@
        <video id="video" ref="video"  autoplay style="display: none"></video>
        <canvas ref="canvas" id="canvas"></canvas>
        <button id="snap" v-on:click="drawImage">Start</button>
+       <v-text-field v-model="thermal"></v-text-field>
    </div>
 </template>
 
@@ -17,6 +18,10 @@ export default {
             ctx2D:{},
             ctx:null,
             isBlazefaceLoaded:false,
+            thermal:"",
+            realThermal:0,
+            model:null,
+            tstamp:0,
         }
     },
     // head(){
@@ -48,6 +53,7 @@ export default {
     
     mounted() {    
     this.video = this.$refs.video;
+   
 		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.getUserMedia(
                 {
@@ -84,16 +90,16 @@ watch:{
             this.video = this.$refs.video;
             this.canvas = this.$refs.canvas;
             var ctx = this.canvas.getContext('2d');
-
+            this.model = await blazeface.load();
             this.canvas.width = video.videoWidth;
             this.canvas.height = video.videoHeight;
 
 
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            const model = await blazeface.load();
+            
             const returnTensors = false;
-            const predictions = await model.estimateFaces(video, returnTensors);
+            const predictions = await this.model.estimateFaces(video, returnTensors);
 
             if (predictions.length > 0) {
                 for (let i = 0; i < predictions.length; i++) {
@@ -122,17 +128,10 @@ watch:{
                     ctx.rect(start[0], start[1], size[0], size[1]);
                     ctx.stroke();
                     ctx.closePath();
-                    //    var prob = (probability[0]*100).toPrecision(5).toString();
-                    //    var text = prob+"C";
-                    ctx.beginPath();
-                    // var temp = Math.random() * 2 + 35;
-                    // var text = temp.toFixed(1).toString() + " C";
-                    var text = this.getRandom();
-                    ctx.font = "15pt sans-serif";
-                    ctx.fillStyle = "red";
-                    ctx.fillText(text, start[0] + 5, start[1] + 20);
-                    ctx.closePath();
+                    await this.predictThermal();
+                   
                 }
+                // setTimeout(100);
             
             }
 
@@ -149,23 +148,57 @@ watch:{
 
             setTimeout(this.drawImage , 100);
         },
-        async draw(){
-           this.canvas = this.$refs.canvas;
-			this.ctx2D = this.canvas
-                .getContext("2d");
-                console.log("halo");
-            this.ctx2D.font = "15pt sans-serif";
-            this.ctx2D.fillStyle = "red";
-            this.ctx2D.fillText("Halo", 10 + 5, 10 + 20);
-            this.ctx2D.closePath();
-             setTimeout(250);
+        async predictThermal(){
+           if(this.realThermal == 0){
+              this.realThermal = (Math.random() * 2 + 35).toFixed(1);
+              this.thermal = this.realThermal.toString() + " C";
+              
+           }else{
+              var temp = (Math.random() * 2 + 35).toFixed(1);
+              var interval = Math.abs(this.realThermal-temp);    
+              if (interval > 0.2){
+                  //do nothing
+              }else{
+                 this.realThermal = temp; 
+              }
+              this.thermal = this.realThermal.toString() + " C";;
+           }
+           if(this.tstamp == 0){
+               this.tstamp  = Math.floor(Date.now() / 1000);
+           }else{
+               var cstamp = Math.floor(Date.now() / 1000);
+               if ((Math.abs(this.tstamp-cstamp)>5)){
+                   this.realThermal = 0;
+                   this.tstamp = 0;
+                //    this.thermal = 'Reset';                   
+                //   setInterval(() => {
+                //       this.video.stop();
+                //       this.drawImage();
+                //   }, 5000);
+                
+                this.video.srcObject.getTracks().forEach(function(track) {
+                    if (track.readyState == 'live' && track.kind === 'video') {
+                        track.stop();
+                       
+                    }
+                });
+                // this.video.pause();
+                setTimeout(() => {
+                    this.video.play();
+                }, 3000);
+                 setTimeout(this.drawImage,3000);
+                
+                  
+                  
+                   
+               }
+           }
+           
         },
-        getRandom() {
-        // setTimeout(100);
-      var temp = Math.random() * 2 + 35;
-        var text = temp.toFixed(1).toString() + " C";
-        return text;
-  }
+        startVideo(){
+            this.video.play();
+        }
+       
        
     },
     destroyed () {

@@ -7,14 +7,14 @@ export default {
   server: {
     host: "0.0.0.0",
     //remark for production
-    // https: {
-    //   key: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.key")
-    //   ),
-    //   cert: fs.readFileSync(
-    //     path.resolve("C://ssl localhost", "client-1.local.crt")
-    //   )
-    // }
+    https: {
+      key: fs.readFileSync(
+        path.resolve("C://ssl localhost", "client-1.local.key")
+      ),
+      cert: fs.readFileSync(
+        path.resolve("C://ssl localhost", "client-1.local.crt")
+      )
+    }
   },
 
   // Target (https://go.nuxtjs.dev/config-target)
