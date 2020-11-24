@@ -1,20 +1,20 @@
 import colors from 'vuetify/es5/util/colors'
-import path from 'path'
-import fs from 'fs'
+// import path from 'path'
+// import fs from 'fs'
 export default {
   // Disable server-side rendering (https://go.nuxtjs.dev/ssr-mode)
   ssr: false,
   server: {
     host: "0.0.0.0",
     //remark for production
-    https: {
-      key: fs.readFileSync(
-        path.resolve("C://ssl localhost", "client-1.local.key")
-      ),
-      cert: fs.readFileSync(  
-        path.resolve("C://ssl localhost", "client-1.local.crt")
-      )
-    }
+    // https: {
+    //   key: fs.readFileSync(
+    //     path.resolve("C://ssl localhost", "client-1.local.key")
+    //   ),
+    //   cert: fs.readFileSync(  
+    //     path.resolve("C://ssl localhost", "client-1.local.crt")
+    //   )
+    // }
   },
 
   // Target (https://go.nuxtjs.dev/config-target)
