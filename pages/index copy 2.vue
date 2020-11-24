@@ -247,7 +247,11 @@ export default {
         this.realThermal = (Math.random() * 2 + 35).toFixed(1);
         this.result[0].value = this.realThermal.toString();
         this.result[1].value ="Normal";
-       
+        // var text = this.result[0].value +" >> "+" "+this.result[1].value;
+        // ctx.font = "12pt sans-serif";
+        // ctx.fillStyle = "red";
+        // ctx.fillText(text, 20, 20);
+        // ctx.closePath();
       } else {
         var temp = (Math.random() * 2 + 35).toFixed(1);
         var interval = Math.abs(this.realThermal - temp);

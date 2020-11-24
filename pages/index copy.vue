@@ -3,7 +3,6 @@
     <v-card-text>
       <v-row>
         <v-col>
-          <v-container>
           <video
             id="video"
             ref="video"
@@ -12,11 +11,9 @@
             autoplay
             style="display: none"
           ></video>
-          <canvas ref="canvas" id="canvas" width="400" height="300" ></canvas>
-          </v-container>
+          <canvas ref="canvas" id="canvas" width="480" height="640"></canvas>
         </v-col>
-      </v-row>
-      <v-row>      
+        <v-divider vertical></v-divider>
         <v-col>
           <h3 style="color: white; align: center">Thermal Detection</h3>
 
@@ -67,6 +64,7 @@
 
 <script>
 import * as blazeface from "@tensorflow-models/blazeface";
+import ImageResize from "image-resize";
 
 export default {
   data: () => ({
@@ -91,7 +89,10 @@ export default {
       playing: false,
       estimate: false,
     },
-     sound: require('@/assets/temp_normal.mp3')
+     sound: require('@/assets/temp_normal.mp3'),
+     canvasWidth:640,
+     canvasHeight:480,
+     imageResize:null,
   }),
  
   mounted() {
@@ -108,6 +109,10 @@ export default {
       // const src = require(`assets/temp_normal.m4a`);
       // this.playSound(src);
       this.video = this.$refs.video;
+      this.imageResize = new ImageResize({
+              format: 'png',
+              width: 480
+          });
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.getUserMedia(
           {
@@ -124,14 +129,39 @@ export default {
         );
         this.video.onPlay = function () {
           setTimeout(drawImage, 150);
-        };
-       
+        };  
+
+        window.addEventListener('resize', resize, false);
+
+      // video.height = 100; /* to get an initial width to work with*/
+      resize();
+
+      function resize() {
+      var videoRatio = video.height / video.width;
+      var windowRatio = window.innerHeight / window.innerWidth; /* browser size */
+      console.log("window "+window.innerWidth+" "+window.innerHeight );      
+      console.log("video "+video.width+" "+video.height );
+          console.log("win ratio "+windowRatio+" vi ration "+videoRatio);
+          if (windowRatio < videoRatio) {
+              if (window.innerHeight > 50) { /* smallest video height */
+                      video.height = window.innerHeight;
+                      
+              } else {
+                  //video.width = 300;
+          }
+          } else {
+             // video.width = window.innerWidth;
+          }
+
+      };
+      
           this.canvas = this.$refs.canvas;
-          var ctx = this.canvas.getContext("2d");      
-           ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
+          var ctx = this.canvas.getContext("2d");       
+          this.canvas.width = video.videoWidth;
+          this.canvas.height = video.videoHeight;
           ctx.beginPath();
           var text = "Hit Estimate Button";
-          ctx.font = "12pt sans-serif";
+          ctx.font = "15pt sans-serif";
           ctx.fillStyle = "white";
           ctx.fillText(text, canvas.width/2 - 85  , canvas.height/2);
           ctx.closePath();
@@ -155,16 +185,14 @@ export default {
           });
           this.videoStat.playing = false;
       }
-      setTimeout(() => {
-        //  this.video = this.$refs.video;
+      setTimeout(() => {         
           this.canvas = this.$refs.canvas;
-          var ctx = this.canvas.getContext("2d");   
-          ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);    
-          // this.canvas.width = video.videoWidth;
-          // this.canvas.height = video.videoHeight;
+          var ctx = this.canvas.getContext("2d");       
+          this.canvas.width = video.videoWidth;
+          this.canvas.height = video.videoHeight;
           ctx.beginPath();
           var text = "Hit Start Button";
-          ctx.font = "12pt sans-serif";
+          ctx.font = "15pt sans-serif";
           ctx.fillStyle = "white";
           ctx.fillText(text, canvas.width/2 - 75  , canvas.height/2);
           ctx.closePath(); 
@@ -174,24 +202,31 @@ export default {
          
     },
     async drawImage() {
-      if(this.videoStat.playing == false){
-         
-          // setTimeout(() => {
-          //    this.startAndDraw();
-          // }, 2000);
-      }
+      if(this.videoStat.playing == false){      }
       else{
-          this.canvas = this.$refs.canvas;
+
+        //
+          
+
+            
+        //
+          // this.video = this.$refs.video;
+          // this.canvas = this.$refs.canvas;
           var ctx = this.canvas.getContext("2d");
           this.model = await blazeface.load();
-          // this.canvas.width = 400;
-          // this.canvas.height = 300;
-       
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-         
+          var scale = Math.min(this.canvas.width / this.video.width, this.canvas.height / this.video.height);
+          // this.video.width = 300;
+          // this.video.height = 300;
+          this.canvas.width = video.videoWidth;
+          this.canvas.height = video.videoHeight;
+          
+          // this.imageResize.resize(video);
+          // ctx.drawImage(video, 0, 0, this.video.width * scale, this.video.height * scale);
+          
+          ctx.drawImage(this.video, 0, 0, this.video.width ,this.video.height );
+
           const returnTensors = false;
-          const predictions = await this.model.estimateFaces(imgData, returnTensors);
+          const predictions = await this.model.estimateFaces(video, returnTensors);
 
           if (predictions.length > 0) {
             for (let i = 0; i < predictions.length; i++) {
@@ -208,7 +243,7 @@ export default {
                 ctx.strokeStyle = "white";
                 var landmark = landmarks[j];
                 // console.log("lengthj =" + landmark);
-                ctx.arc(landmark[0], landmark[1], 1, 0, 2 * Math.PI);
+                ctx.arc(landmark[0], landmark[1], 4, 0, 2 * Math.PI);
                 //  ctx.arc(100, 75, 5, 0, 2 * Math.PI);
 
                 //  ctx.fillStyle = "blue";
@@ -221,12 +256,11 @@ export default {
               ctx.rect(start[0], start[1], size[0], size[1]);
               ctx.stroke();
               ctx.closePath();
-              await this.predictThermal(ctx);
+              await this.predictThermal();
             }
             // setTimeout(100);
           }else{
             this.resetResult();
-            
           }
 
           // var faceArea = 300;
@@ -242,33 +276,27 @@ export default {
           setTimeout(this.drawImage, 150);
       }
     },
-     predictThermal(ctx) {
+     predictThermal() {
       if (this.realThermal == 0) {
         this.realThermal = (Math.random() * 2 + 35).toFixed(1);
         this.result[0].value = this.realThermal.toString();
         this.result[1].value ="Normal";
-       
       } else {
         var temp = (Math.random() * 2 + 35).toFixed(1);
         var interval = Math.abs(this.realThermal - temp);
-        if (interval > 0.1) {
+        if (interval > 0.2) {
           //do nothing
         } else {
           this.realThermal = temp;
         }
-        // this.result[0].value = this.realThermal.toString();
-        // this.result[1].value ="Normal";
-        //   var text = this.result[0].value +" >> "+" "+this.result[1].value;
-        // ctx.font = "12pt sans-serif";
-        // ctx.fillStyle = "red";
-        // ctx.fillText(text, 20, 20);
-        // ctx.closePath();
+        this.result[0].value = this.realThermal.toString();
+        this.result[1].value ="Normal";
       }
       if (this.tstamp == 0) {
         this.tstamp = Math.floor(Date.now() / 1000);
       } else {
         var cstamp = Math.floor(Date.now() / 1000);
-        if (Math.abs(this.tstamp - cstamp) > 10) {
+        if (Math.abs(this.tstamp - cstamp) > 5) {
           this.playSound();
           this.realThermal = 0;
           this.tstamp = 0;
@@ -297,7 +325,6 @@ export default {
       this.result[1].value = 'Unknown';
       this.realThermal = 0;
       this.tstamp = 0;
-        
 
     },
     playSound () {
@@ -305,7 +332,16 @@ export default {
         var audio = new Audio(this.sound);
         audio.play();
       }
-    }
+    },
+    scaleImage(img){
+       // get the scale
+      var scale = Math.min(this.canvas.width / img.width, this.canvas.height / img.height);
+      // get the top left position of the image
+      var x = (this.canvas.width / 2) - (img.width / 2) * scale;
+      var y = (this.canvas.width / 2) - (img.height / 2) * scale;
+      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+    },
+    
   },
 
   destroyed() {
@@ -316,10 +352,19 @@ export default {
 </script>
 <style scoped>
 .video {
-  width: 100%;
-  /* object-fit:cover; */
+  width: 480px;
+  height: 640px;
+  max-width: 480px;
+  max-height: 640px;
+  object-fit:cover;
 }
-
+.canvas {
+  width: 480px;
+  height: 640px;
+  max-width: 480px;
+  max-height: 640px;
+  object-fit:cover;
+}
 </style>
 
 
