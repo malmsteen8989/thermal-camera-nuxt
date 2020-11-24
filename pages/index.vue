@@ -184,7 +184,7 @@ export default {
           this.model = await blazeface.load();
           this.canvas.width = video.videoWidth;
           this.canvas.height = video.videoHeight;
-
+       
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           const returnTensors = false;
@@ -309,12 +309,14 @@ export default {
   height: 640px;
   max-width: 480px;
   max-height: 640px;
+  object-fit:cover;
 }
 .canvas {
   width: 480px;
   height: 640px;
   max-width: 480px;
   max-height: 640px;
+  object-fit:cover;
 }
 </style>
 
