@@ -1,9 +1,9 @@
 <template>
   <v-card class="mx-auto" dark max-width="2000">
     <v-card-text>
-      <v-row>
+      <v-row no-gutters> 
         <v-col>
-          <v-container>
+          
           <video
             id="video"
             ref="video"
@@ -12,56 +12,53 @@
             autoplay
             style="display: none"
           ></video>
-          <canvas ref="canvas" id="canvas" width="400" height="300" ></canvas>
-          </v-container>
+          <canvas ref="canvas" id="canvas" width="400" height="300" style="border:1px;" ></canvas>
+          
         </v-col>
       </v-row>
-      <v-row>      
+      <v-row no-gutters>      
         <v-col>
-          <h3 style="color: white; align: center">Thermal Detection</h3>
-
-          <hr class="my-3" />
-
+               
+          
+         <v-btn class="mx-2" dark color="pink" small v-on:click="startVideo">
+            Start
+          </v-btn>
+            <v-btn class="mx-2" dark color="pink" small v-on:click="drawImage">
+            Estimate
+          </v-btn>
+          <v-btn class="mx-2" dark color="pink" small v-on:click="stopVideo">
+            Stop
+          </v-btn>
+          <v-progress-circular
+            :rotate="360"
+            :size="40"
+            :width="6"
+            :value="value"
+            color="pink"
+          >
+            {{ value }}
+          </v-progress-circular>
+          <hr class="my-1" />
+        </v-col>
+      </v-row>
+      <v-row>
+      <v-col>
           <v-list class="transparent">
             <v-list-item v-for="item in result" :key="item.category">
               <v-list-item-title>{{ item.category }}</v-list-item-title>
               <v-list-item-icon>
-                <v-icon color="red"> mdi-chevron-double-right</v-icon>
+                <v-icon color="pink"> mdi-chevron-double-right</v-icon>
               </v-list-item-icon>
               <v-list-item-title>{{ item.value }}</v-list-item-title>
               <v-list-item-icon>
-                <v-icon color="cyan">{{ item.icon }}</v-icon>
+                <v-icon color="pink">{{ item.icon }}</v-icon>
               </v-list-item-icon>
             </v-list-item>
-          </v-list>
-          <v-btn class="mx-2" dark color="cyan" small v-on:click="startVideo">
-            Start
-          </v-btn>
-            <v-btn class="mx-2" dark color="cyan" small v-on:click="drawImage">
-            Estimate
-          </v-btn>
-          <v-btn class="mx-2" dark color="cyan" small v-on:click="stopVideo">
-            Stop
-          </v-btn>
+          </v-list>          
+          
         </v-col>
-      </v-row>
-      <v-container style="align: center">
-        <!-- Video Section -->
-
-        <!-- <v-text-field v-model="thermal"></v-text-field> -->
-        <!-- </div> -->
-        <!-- Video Section -->
-      </v-container>
+      </v-row>     
     </v-card-text>
-    <!-- <v-card-actions>
-          <v-spacer />
-          <v-btn           
-            nuxt
-            to="/About"
-          >
-            About
-          </v-btn>
-        </v-card-actions> -->
   </v-card>
 </template>
 
@@ -72,7 +69,7 @@ export default {
   data: () => ({
     result: [
       {
-        category: "Temperature (Estimate) ",
+        category: "Temperature (Est) ",
         icon: "mdi-temperature-celsius",
         value: "Unknown",
       },
@@ -87,15 +84,27 @@ export default {
     realThermal: 0,
     model: null,
     tstamp: 0,
+    rstamp:0,
     videoStat: {
       playing: false,
       estimate: false,
     },
-     sound: require('@/assets/temp_normal.mp3')
+     sound: require('@/assets/temp_normal.mp3'),
+      interval: {},
+        value: 0,
   }),
+  beforeDestroy () {
+      clearInterval(this.interval)
+    },
  
   mounted() {
     this.startVideo();
+    //  this.interval = setInterval(() => {
+    //     if (this.value === 100) {
+    //       return (this.value = 0)
+    //     }
+    //     this.value += 10
+    //   }, 1000)
     // var tempNormal = require("@/assets/temp_normal.m4a");
   },
 
@@ -194,18 +203,19 @@ export default {
           const predictions = await this.model.estimateFaces(imgData, returnTensors);
 
           if (predictions.length > 0) {
+             
             for (let i = 0; i < predictions.length; i++) {
               const start = predictions[i].topLeft;
               const end = predictions[i].bottomRight;
               var probability = predictions[i].probability;
-              console.log("prob = "+probability);
+              // console.log("prob = "+probability);
               const size = [end[0] - start[0], end[1] - start[1]];
               var landmarks = predictions[i].landmarks;
               // Render a rectangle over each detected face.
 
               for (var j = 0; j < landmarks.length; j++) {
                 ctx.beginPath();
-                ctx.strokeStyle = "white";
+                ctx.strokeStyle = "pink";
                 var landmark = landmarks[j];
                 // console.log("lengthj =" + landmark);
                 ctx.arc(landmark[0], landmark[1], 1, 0, 2 * Math.PI);
@@ -216,8 +226,8 @@ export default {
                 ctx.closePath();
               }
               ctx.beginPath();
-              ctx.lineWidth = "8";
-              ctx.strokeStyle = "cyan";
+              ctx.lineWidth = "6";
+              ctx.strokeStyle = "teal";
               ctx.rect(start[0], start[1], size[0], size[1]);
               ctx.stroke();
               ctx.closePath();
@@ -245,13 +255,13 @@ export default {
      predictThermal(ctx) {
       if (this.realThermal == 0) {
         this.realThermal = (Math.random() * 2 + 35).toFixed(1);
-        this.result[0].value = this.realThermal.toString();
-        this.result[1].value ="Normal";
+        // this.result[0].value = "Detecting...";
+        // this.result[1].value ="Unknown";
        
       } else {
         var temp = (Math.random() * 2 + 35).toFixed(1);
-        var interval = Math.abs(this.realThermal - temp);
-        if (interval > 0.1) {
+        var int = Math.abs(this.realThermal - temp);
+        if (int > 0.1) {
           //do nothing
         } else {
           this.realThermal = temp;
@@ -264,39 +274,47 @@ export default {
         // ctx.fillText(text, 20, 20);
         // ctx.closePath();
       }
+      
       if (this.tstamp == 0) {
-        this.tstamp = Math.floor(Date.now() / 1000);
+        this.tstamp = Math.floor(Date.now() / 1000);   
+        this.value = 0;    
+        
       } else {
         var cstamp = Math.floor(Date.now() / 1000);
-        if (Math.abs(this.tstamp - cstamp) > 10) {
-          this.playSound();
-          this.realThermal = 0;
-          this.tstamp = 0;
-          //    this.thermal = 'Reset';
-          //   setInterval(() => {
-          //       this.video.stop();
-          //       this.drawImage();
-          //   }, 5000);
-
-          // this.video.srcObject.getTracks().forEach(function(track) {
-          //     if (track.readyState == 'live' && track.kind === 'video') {
-          //         track.stop();
-
-          //     }
-          // });
-          // // this.video.pause();
-          // setTimeout(() => {
-          //     this.video.play();
-          // }, 3000);
-          //  setTimeout(this.drawImage,3000);
+        var timing = Math.abs(this.tstamp - cstamp);
+        if(timing<=10){
+          this.value = timing * 10;
         }
+        if (timing > 10) {
+          this.result[0].value = this.realThermal.toString();
+          this.result[1].value ="Normal";
+          this.playSound();         
+          this.tstamp = 0;
+          this.realThermal = 0;
+          
+        }
+        // if(this.rstamp == 0){
+        // //stelah 13 detik maka waktu tampil text dan loader baru direset
+        //  this.rstamp = Math.floor(Date.now() / 1000);
+        //  this.value = 0;
+        // }else{
+        //   var xstamp = Math.floor(Date.now() / 1000);
+        //   var rTiming = Math.abs(this.rstamp - xstamp);
+        //   if (timing > 13) {
+        //        this.realThermal = 0;
+        //   }
+        // }
+        
+         
+          
       }
     },
     resetResult(){      
-      this.result[0].value = 'Unknown';
+      this.result[0].value = 'Detecting';
       this.result[1].value = 'Unknown';
       this.realThermal = 0;
       this.tstamp = 0;
+      this.value = 0;
         
 
     },
@@ -318,6 +336,10 @@ export default {
 .video {
   width: 100%;
   /* object-fit:cover; */
+}
+.v-progress-circular {
+  margin: 1rem;
+  
 }
 
 </style>
